@@ -29,7 +29,7 @@ class TkinterGUI:
         self.closeButton = Button(master, text="Close", command=self.close)
         self.closeButton.pack()
 
-        global image
+        global imageä
         cv2.imshow("upscaled", image)
         im = Image.fromarray(image)
         imgtk = ImageTk.PhotoImage(image=im)
