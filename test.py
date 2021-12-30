@@ -149,6 +149,8 @@ def ImageValidation():
         errorLabel.pack(padx=10, pady=10)
         errorRoot.eval('tk::PlaceWindow . center')
 
+#_________________________constants_and_init________________________________
+
 image = cv2.imread('C:/Users/mpeti/Pictures/teszt3.png', flags=cv2.IMREAD_COLOR)
 singleImage = 0
 validatedImageFlag = 0
