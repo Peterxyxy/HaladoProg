@@ -5,6 +5,8 @@ from tkinter import *
 from tkinterdnd2 import *
 from PIL import Image, ImageTk
 
+#_________________________manipulator________________________________
+
 class Manipulator:
     global var, image
 
@@ -13,27 +15,28 @@ class Manipulator:
         master.title("Peter's photo manipulator")
 
         self.label = Label(master, text="Peter's photo manipulator")
-        self.label.pack(side=TOP)
+        self.label.pack(padx=5, pady=5)
 
         self.backButton = Button(master, text="Back", command=self.back)
-        self.backButton.pack()
+        self.backButton.pack(padx=5, pady=5)
+
+        self.scale = Scale(master, variable=var, orient=HORIZONTAL, from_=1, to=200)
+        self.scale.pack()
 
         self.viewButton = Button(master, text="upscale", command=self.scaling)
-        self.viewButton.pack()
+        self.viewButton.pack(padx=5, pady=5)
 
         self.viewButton = Button(master, text="sharpen", command=self.sharpening)
-        self.viewButton.pack()
+        self.viewButton.pack(padx=5, pady=5)
 
         self.viewButton = Button(master, text="grayscale", command=self.grayScale)
-        self.viewButton.pack()
+        self.viewButton.pack(padx=5, pady=5)
 
         self.viewButton = Button(master, text="erode", command=self.erode)
-        self.viewButton.pack()
+        self.viewButton.pack(padx=5, pady=5)
 
         self.closeButton = Button(master, text="Close", command=self.close)
-        self.closeButton.pack()
-
-        image = cv2.imread('C:/Users/mpeti/Pictures/teszt3.png', flags=cv2.IMREAD_COLOR)
+        self.closeButton.pack(padx=5, pady=5)
 
         #photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(image))
 
@@ -41,8 +44,7 @@ class Manipulator:
         #self.canvas.pack()
         #self.canvas.create_image(0, 0, image=photo)
 
-        self.scale = Scale(master, variable=var, orient=HORIZONTAL, from_=1, to=200)
-        self.scale.pack()
+
 
     def close(self):
         self.master.destroy()
@@ -51,7 +53,7 @@ class Manipulator:
         global root, mainPage
         for widget in root.winfo_children():
             widget.destroy()
-        root.geometry('300x100')
+        root.geometry('300x150')
         mainPage = MainPage(root)
 
 
@@ -103,43 +105,56 @@ class Manipulator:
         cv2.imshow("erode", image)
         singleImage =1
 
+#_________________________main_page________________________________
+
 class MainPage:
     def __init__(self, master):
         self.master = master
 
         global image, var2, var
 
-        self.button = Button(master, text="Image manipulation", command=self.Classic)
-        self.button.pack()
-
         def drop(event):
             var2.set(event.data)
 
-        Label(root, text='Path of the File').pack(anchor=NW, padx=10)
+        Label(root, text='A kép elérési útja:').pack(anchor=NW, padx=10, pady=10)
         e_box = Entry(root, textvar=var2, width=80)
         e_box.pack(fill=X, padx=10)
         e_box.drop_target_register(DND_FILES)
         e_box.dnd_bind('<<Drop>>', drop)
 
+        self.button = Button(master, text="Image manipulation", command=self.Classic)
+        self.button.pack(pady=10)
 
     def Classic(self):
-        global image, var, myInput
-        
-        image = cv2.imread(str(var2.get()), flags=cv2.IMREAD_COLOR)
+        global validatedImageFlag, image
+        ImageValidation()
+        if validatedImageFlag == 1:
+            global image, var, var2 ,myInput, singleImage
+            for widget in root.winfo_children():
+                widget.destroy()
 
-        for widget in root.winfo_children():
-            widget.destroy()
-
-        root.geometry('300x300')
-        manipulator = Manipulator(root)
+            root.geometry('300x300')
+            manipulator = Manipulator(root)
 
 
+def ImageValidation():
+    global validatedImageFlag, image
+    image = cv2.imread(str(var2.get()), flags=cv2.IMREAD_COLOR)
+    if image is not None:
+        validatedImageFlag = 1
+
+    else:
+        errorRoot = Tk()
+        errorLabel = Label(errorRoot, text='"Nem megfelelő elérési utat adott meg! \nKérem próbálja újra."')
+        errorLabel.pack(padx=10, pady=10)
+        errorRoot.eval('tk::PlaceWindow . center')
 
 image = cv2.imread('C:/Users/mpeti/Pictures/teszt3.png', flags=cv2.IMREAD_COLOR)
 singleImage = 0
-
+validatedImageFlag = 0
 root = TkinterDnD.Tk()
-root.geometry('300x100')
+root.geometry('300x150')
+root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
 
 var2 = StringVar()
