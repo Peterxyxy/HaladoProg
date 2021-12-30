@@ -1,10 +1,11 @@
+import PIL
 import cv2
 import numpy as np
 from tkinter import *
 from tkinterdnd2 import *
 from PIL import Image, ImageTk
 
-class TkinterGUI:
+class Manipulator:
     global var, image
 
     def __init__(self, master):
@@ -13,6 +14,9 @@ class TkinterGUI:
 
         self.label = Label(master, text="Peter's photo manipulator")
         self.label.pack(side=TOP)
+
+        self.backButton = Button(master, text="Back", command=self.back)
+        self.backButton.pack()
 
         self.viewButton = Button(master, text="upscale", command=self.scaling)
         self.viewButton.pack()
@@ -29,16 +33,13 @@ class TkinterGUI:
         self.closeButton = Button(master, text="Close", command=self.close)
         self.closeButton.pack()
 
-        global image
-        cv2.imshow("upscaled", image)
-        im = Image.fromarray(image)
-        imgtk = ImageTk.PhotoImage(image=im)
+        image = cv2.imread('C:/Users/mpeti/Pictures/teszt3.png', flags=cv2.IMREAD_COLOR)
 
-        self.label2 = Label(master, image=imgtk)
-        self.label2.pack()
+        #photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(image))
 
         #self.canvas = Canvas(master, bg="black", height=500, width=500)
         #self.canvas.pack()
+        #self.canvas.create_image(0, 0, image=photo)
 
         self.scale = Scale(master, variable=var, orient=HORIZONTAL, from_=1, to=200)
         self.scale.pack()
@@ -46,8 +47,17 @@ class TkinterGUI:
     def close(self):
         self.master.destroy()
 
+    def back(self):
+        global root, mainPage
+        for widget in root.winfo_children():
+            widget.destroy()
+        root.geometry('300x100')
+        mainPage = MainPage(root)
+
+
     def scaling(self):
         global image, singleImage, var
+        print(var.get())
         scale_percent = int(var.get())
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
@@ -114,25 +124,31 @@ class MainPage:
 
     def Classic(self):
         global image, var, myInput
-        print(str(var2.get()))
+        
         image = cv2.imread(str(var2.get()), flags=cv2.IMREAD_COLOR)
-        root2 = Tk()
-        root2.geometry('300x200')
-        my_gui = TkinterGUI(root2)
-        root.destroy()
+
+        for widget in root.winfo_children():
+            widget.destroy()
+
+        root.geometry('300x300')
+        manipulator = Manipulator(root)
+
 
 
 image = cv2.imread('C:/Users/mpeti/Pictures/teszt3.png', flags=cv2.IMREAD_COLOR)
 singleImage = 0
-root = TkinterDnD.Tk()
-root.geometry('300x200')
-var = DoubleVar()
-var = 100
-var2 = StringVar()
 
-#my_gui = TkinterGUI(root)
+root = TkinterDnD.Tk()
+root.geometry('300x100')
+var = DoubleVar()
+
+var2 = StringVar()
+hide = 1
+
 mainPage = MainPage(root)
 root.mainloop()
+
+#my_gui = TkinterGUI(root)
 
 #ablakok bezarasa
 #cv2.waitKey()
