@@ -127,12 +127,10 @@ class MainPage:
 
     def Classic(self):
         global validatedImageFlag, image
-        ImageValidation()
-        if validatedImageFlag == 1:
+        if ImageValidation():
             global image, var, var2 ,myInput, singleImage
             for widget in root.winfo_children():
                 widget.destroy()
-
             root.geometry('300x300')
             manipulator = Manipulator(root)
 
@@ -141,13 +139,13 @@ def ImageValidation():
     global validatedImageFlag, image
     image = cv2.imread(str(var2.get()), flags=cv2.IMREAD_COLOR)
     if image is not None:
-        validatedImageFlag = 1
-
+        return True
     else:
         errorRoot = Tk()
         errorLabel = Label(errorRoot, text='"Nem megfelelő elérési utat adott meg! \nKérem próbálja újra."')
         errorLabel.pack(padx=10, pady=10)
         errorRoot.eval('tk::PlaceWindow . center')
+
 
 #_________________________constants_and_init________________________________
 
