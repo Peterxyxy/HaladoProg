@@ -124,11 +124,12 @@ class MainPage:
 
         self.button = Button(master, text="Image manipulation", command=self.Classic)
         self.button.pack(pady=10)
+        imageviewer('C:/Users/mpeti/Pictures/teszt3.png', root)
 
     def Classic(self):
         global validatedImageFlag, image
         if ImageValidation():
-            global image, var, var2 ,myInput, singleImage
+            global image, var, var2, singleImage
             for widget in root.winfo_children():
                 widget.destroy()
             root.geometry('300x300')
@@ -146,6 +147,15 @@ def ImageValidation():
         errorLabel.pack(padx=10, pady=10)
         errorRoot.eval('tk::PlaceWindow . center')
 
+def imageviewer(path, master):
+    global image, root
+    img = image
+    blue, green, red = cv2.split(img)
+    img = cv2.merge((red, green, blue))
+    im = Image.fromarray(img)
+    imgtk = ImageTk.PhotoImage(image=im)
+    Label(master, image=imgtk).pack()
+    master.mainloop()
 
 #_________________________constants_and_init________________________________
 
@@ -156,7 +166,6 @@ root = TkinterDnD.Tk()
 root.geometry('300x150')
 root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
-
 var2 = StringVar()
 hide = 1
 
