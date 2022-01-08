@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 #_________________________manipulator________________________________
 
 class Manipulator:
-    global var, image
+    global var, image, var3, dropDownSelection1
 
     def __init__(self, master):
         self.master = master
@@ -19,6 +19,9 @@ class Manipulator:
 
         self.backButton = Button(master, text="Back", command=self.back)
         self.backButton.pack(padx=5, pady=5)
+
+        self.dropDown = OptionMenu(master, var3, "linear", "lanczos", "nearest", "cubic")
+        self.dropDown.pack(padx=5, pady=5)
 
         self.scale = Scale(master, variable=var, orient=HORIZONTAL, from_=1, to=200)
         self.scale.pack()
@@ -58,24 +61,22 @@ class Manipulator:
 
 
     def scaling(self):
-        global image, singleImage, var
+        global image, singleImage, var, var3
         print(var.get())
         scale_percent = int(var.get())
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
         dim = (width, height)
-        # upscaler kivalasztasa
-        # myinput = input('irja be a nagyitasi eljaras nevet \n')
         my_dict = {'nearest': cv2.INTER_NEAREST,
                    'linear': cv2.INTER_LINEAR,
                    'cubic': cv2.INTER_CUBIC,
                    'lanczos': cv2.INTER_LANCZOS4}
-        myinput = "lanczos"
-        image = cv2.resize(image, dim, my_dict[myinput])
+        image = cv2.resize(image, dim, my_dict[var3.get()])
         if singleImage != 0:
             cv2.destroyAllWindows()
-        cv2.imshow("upscaled", image)
+        #cv2.imshow("upscaled", image)
         singleImage = 1
+        imageviewer(root)
 
     def sharpening(self):
         global kernel, image, singleImage
@@ -86,15 +87,22 @@ class Manipulator:
         image = cv2.filter2D(src=image, ddepth=-1, kernel=kernel)
         if singleImage != 0:
             cv2.destroyAllWindows()
-        cv2.imshow("sharpened", image)
+        #cv2.imshow("sharpened", image)
         singleImage = 1
+        imageviewer(root)
 
     def grayScale(self):
         global image, singleImage
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        backtorgb = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
         if singleImage != 0:
             cv2.destroyAllWindows()
-        cv2.imshow('grayscale', gray_image)
+        im = Image.fromarray(backtorgb)
+        #ImageLabel = Label(self.master, image=im).pack()
+        #self.master.mainloop()
+        #cv2.imshow('grayscale', gray_image)
+        image = cv2.merge([gray_image,0,0])
+        imageviewer(root)
 
     def erode(self):
         global kernel, image, singleImage
@@ -102,8 +110,9 @@ class Manipulator:
         image = cv2.erode(image, kernel, cv2.BORDER_REFLECT)
         if singleImage != 0:
             cv2.destroyAllWindows()
-        cv2.imshow("erode", image)
+        #cv2.imshow("erode", image)
         singleImage =1
+        imageviewer(root)
 
 #_________________________main_page________________________________
 
@@ -124,7 +133,6 @@ class MainPage:
 
         self.button = Button(master, text="Image manipulation", command=self.Classic)
         self.button.pack(pady=10)
-        imageviewer('C:/Users/mpeti/Pictures/teszt3.png', root)
 
     def Classic(self):
         global validatedImageFlag, image
@@ -134,7 +142,9 @@ class MainPage:
                 widget.destroy()
             root.geometry('300x300')
             manipulator = Manipulator(root)
+            imageviewer(root)
 
+#_________________________global_functions________________________________
 
 def ImageValidation():
     global validatedImageFlag, image
@@ -147,15 +157,21 @@ def ImageValidation():
         errorLabel.pack(padx=10, pady=10)
         errorRoot.eval('tk::PlaceWindow . center')
 
-def imageviewer(path, master):
-    global image, root
+def imageviewer(master):
+    global image, root, singleImage
     img = image
     blue, green, red = cv2.split(img)
     img = cv2.merge((red, green, blue))
     im = Image.fromarray(img)
     imgtk = ImageTk.PhotoImage(image=im)
-    Label(master, image=imgtk).pack()
+    if singleImage != 0:
+        for widget in root.winfo_children():
+            temp = widget
+        widget.destroy()
+    ImageLabel = Label(master, image=imgtk).pack()
     master.mainloop()
+
+
 
 #_________________________constants_and_init________________________________
 
@@ -167,6 +183,12 @@ root.geometry('300x150')
 root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
 var2 = StringVar()
+var3 = StringVar()
+var3.set("linear")
+dropDownSelection1 = ['nearest',
+                   'linear',
+                   'cubic',
+                   'lanczos']
 hide = 1
 
 mainPage = MainPage(root)
