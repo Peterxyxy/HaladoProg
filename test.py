@@ -185,9 +185,12 @@ def appScaler():
     height = int(image.shape[0])
     root.geometry(str(300+width) + "x" + str(500+height))
 
+
+#def savingImage():
+
+
 #_________________________constants_and_init________________________________
 
-image = cv2.imread('C:/Users/mpeti/Pictures/teszt3.png', flags=cv2.IMREAD_COLOR)
 singleImage = 0
 validatedImageFlag = 0
 root = TkinterDnD.Tk()
