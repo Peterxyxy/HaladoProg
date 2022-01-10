@@ -61,11 +61,11 @@ class Manipulator:
 
 
     def scaling(self):
-        global image, singleImage, var, var3
-        print(var.get())
+        global image, singleImage, var, var3, root
         scale_percent = int(var.get())
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
+        appScaler()
         dim = (width, height)
         my_dict = {'nearest': cv2.INTER_NEAREST,
                    'linear': cv2.INTER_LINEAR,
@@ -78,6 +78,7 @@ class Manipulator:
         singleImage = 1
         imageviewer(root)
 
+
     def sharpening(self):
         global kernel, image, singleImage
         kernel = np.array([[0, -1, 0],
@@ -87,7 +88,6 @@ class Manipulator:
         image = cv2.filter2D(src=image, ddepth=-1, kernel=kernel)
         if singleImage != 0:
             cv2.destroyAllWindows()
-        #cv2.imshow("sharpened", image)
         singleImage = 1
         imageviewer(root)
 
@@ -110,9 +110,9 @@ class Manipulator:
         image = cv2.erode(image, kernel, cv2.BORDER_REFLECT)
         if singleImage != 0:
             cv2.destroyAllWindows()
-        #cv2.imshow("erode", image)
         singleImage =1
         imageviewer(root)
+
 
 #_________________________main_page________________________________
 
@@ -134,15 +134,23 @@ class MainPage:
         self.button = Button(master, text="Image manipulation", command=self.Classic)
         self.button.pack(pady=10)
 
+        self.closeButton = Button(master, text="Close", command=self.close)
+        self.closeButton.pack(padx=5, pady=5)
+
+    def close(self):
+        self.master.destroy()
+
     def Classic(self):
         global validatedImageFlag, image
         if ImageValidation():
             global image, var, var2, singleImage
             for widget in root.winfo_children():
                 widget.destroy()
-            root.geometry('300x300')
+            appScaler()
             manipulator = Manipulator(root)
             imageviewer(root)
+
+
 
 #_________________________global_functions________________________________
 
@@ -171,7 +179,11 @@ def imageviewer(master):
     ImageLabel = Label(master, image=imgtk).pack()
     master.mainloop()
 
-
+def appScaler():
+    global image, root
+    width = int(image.shape[1])
+    height = int(image.shape[0])
+    root.geometry(str(300+width) + "x" + str(500+height))
 
 #_________________________constants_and_init________________________________
 
