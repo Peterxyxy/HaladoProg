@@ -38,6 +38,9 @@ class Manipulator:
         self.viewButton = Button(master, text="erode", command=self.erode)
         self.viewButton.pack(padx=5, pady=5)
 
+        self.viewButton = Button(master, text="save", command=self.save)
+        self.viewButton.pack(padx=5, pady=5)
+
         self.closeButton = Button(master, text="Close", command=self.close)
         self.closeButton.pack(padx=5, pady=5)
 
@@ -51,6 +54,9 @@ class Manipulator:
 
     def close(self):
         self.master.destroy()
+
+    def save(self):
+        saveImage()
 
     def back(self):
         global root, mainPage
@@ -80,7 +86,7 @@ class Manipulator:
 
 
     def sharpening(self):
-        global kernel, image, singleImage
+        global kernel, image, singleImage, function
         kernel = np.array([[0, -1, 0],
                            [-1, 10, -1],
                            [0, -1, 0]])
@@ -90,6 +96,7 @@ class Manipulator:
             cv2.destroyAllWindows()
         singleImage = 1
         imageviewer(root)
+        function.set(function.get() + "sharpened")
 
     def grayScale(self):
         global image, singleImage
@@ -105,13 +112,14 @@ class Manipulator:
         imageviewer(root)
 
     def erode(self):
-        global kernel, image, singleImage
+        global kernel, image, singleImage, function
         kernel = np.ones((6, 6), np.uint8)
         image = cv2.erode(image, kernel, cv2.BORDER_REFLECT)
         if singleImage != 0:
             cv2.destroyAllWindows()
         singleImage =1
         imageviewer(root)
+        function.set(function.get() + "eroded")
 
 
 #_________________________main_page________________________________
@@ -186,7 +194,10 @@ def appScaler():
     root.geometry(str(300+width) + "x" + str(500+height))
 
 
-#def savingImage():
+def saveImage():
+    global image, var2, function
+    fileName = str(function.get() + ".jpg")
+    cv2.imwrite(str(str(var2.get()) + fileName), image)
 
 
 #_________________________constants_and_init________________________________
@@ -199,6 +210,7 @@ root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
 var2 = StringVar()
 var3 = StringVar()
+function = StringVar()
 var3.set("linear")
 dropDownSelection1 = ['nearest',
                    'linear',
