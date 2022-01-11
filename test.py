@@ -1,10 +1,13 @@
 import PIL
 import cv2
+from cv2 import cv2
+from cv2 import dnn_superres
 import numpy as np
 from tkinter import *
 from tkinterdnd2 import *
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
+
 
 
 #_________________________manipulator________________________________
@@ -46,12 +49,6 @@ class Manipulator:
         self.closeButton = Button(master, text="Close", command=self.close)
         self.closeButton.pack(padx=5, pady=5)
 
-        #photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(image))
-
-        #self.canvas = Canvas(master, bg="black", height=500, width=500)
-        #self.canvas.pack()
-        #self.canvas.create_image(0, 0, image=photo)
-
 
 
     def close(self):
@@ -64,7 +61,7 @@ class Manipulator:
         global root, mainPage
         for widget in root.winfo_children():
             widget.destroy()
-        root.geometry('300x150')
+        root.geometry('300x300')
         mainPage = MainPage(root)
 
 
@@ -130,13 +127,77 @@ class Manipulator:
 class AIUpcscaler:
     def __init__(self, master):
         self.master = master
-        master.title("Peter's photo manipulator")
+        master.title("Peter's photo upscaler")
 
-        self.edsrButton = Button(master, text="erode", command=self.edsrUpscale)
+        self.backButton = Button(master, text="Back", command=self.back)
+        self.backButton.pack(padx=5, pady=5)
+
+        self.edsrButton = Button(master, text="EDSR", command=self.edsrUpscale)
         self.edsrButton.pack(padx=5, pady=5)
 
+        self.edsrButton = Button(master, text="ESPCN", command=self.espcnUpscale)
+        self.edsrButton.pack(padx=5, pady=5)
+
+        self.edsrButton = Button(master, text="FSRCNN", command=self.fsrcnnUpscale)
+        self.edsrButton.pack(padx=5, pady=5)
+
+        self.edsrButton = Button(master, text="LapSRN", command=self.lapsrnUpscale)
+        self.edsrButton.pack(padx=5, pady=5)
+
+        self.closeButton = Button(master, text="Close", command=self.close)
+        self.closeButton.pack(padx=5, pady=5)
+
+
     def edsrUpscale(self):
-        return
+        global image, var2, function
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        path = "EDSR_x2.pb"
+        sr.readModel(path)
+        sr.setModel("edsr", 2)
+        image = sr.upsample(image)
+        cv2.imshow("upscaled with EDSR", image)
+        function = function + "edsr_"
+
+
+    def espcnUpscale(self):
+        global image, var2, function
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        path = "ESPCN_x2.pb"
+        sr.readModel(path)
+        sr.setModel("espcn", 2)
+        image = sr.upsample(image)
+        cv2.imshow("upscaled with ESPCN", image)
+        function = function + "espcn_"
+
+    def fsrcnnUpscale(self):
+        global image, var2, function
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        path = "FSRCNN_x2.pb"
+        sr.readModel(path)
+        sr.setModel("fsrcnn", 2)
+        image = sr.upsample(image)
+        cv2.imshow("upscaled with FSRCNN", image)
+        function = function + "fsrxnn_"
+
+    def lapsrnUpscale(self):
+        global image, var2, function
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        path = "LapSRN_x2.pb"
+        sr.readModel(path)
+        sr.setModel("lapsrn", 2)
+        image = sr.upsample(image)
+        cv2.imshow("upscaled with LapSRN", image)
+        function = function + "lapsrn_"
+
+    def close(self):
+        self.master.destroy()
+
+    def back(self):
+        global root, mainPage
+        for widget in root.winfo_children():
+            widget.destroy()
+        root.geometry('300x300')
+        mainPage = MainPage(root)
 
 #_________________________main_page________________________________
 
@@ -155,7 +216,10 @@ class MainPage:
         e_box.drop_target_register(DND_FILES)
         e_box.dnd_bind('<<Drop>>', drop)
 
-        self.button = Button(master, text="Image manipulation", command=self.Classic)
+        self.button = Button(master, text="Image manipulation", command=self.classic)
+        self.button.pack(pady=10)
+
+        self.button = Button(master, text="AI upscaling", command=self.aiUpscaler)
         self.button.pack(pady=10)
 
         self.closeButton = Button(master, text="Close", command=self.close)
@@ -164,7 +228,7 @@ class MainPage:
     def close(self):
         self.master.destroy()
 
-    def Classic(self):
+    def classic(self):
         global validatedImageFlag, image
         if ImageValidation():
             global image, var, var2, singleImage
@@ -172,6 +236,16 @@ class MainPage:
                 widget.destroy()
             appScaler()
             manipulator = Manipulator(root)
+            imageviewer(root)
+
+    def aiUpscaler(self):
+        global validatedImageFlag, image
+        if ImageValidation():
+            global image, var, var2, singleImage
+            for widget in root.winfo_children():
+                widget.destroy()
+            appScaler()
+            aIUpcscaler = AIUpcscaler(root)
             imageviewer(root)
 
 
@@ -207,7 +281,7 @@ def appScaler():
     global image, root
     width = int(image.shape[1])
     height = int(image.shape[0])
-    root.geometry(str(300+width) + "x" + str(500+height))
+    root.geometry(str(300+height) + "x" + str(400+width))
 
 
 def saveImage():
@@ -216,12 +290,14 @@ def saveImage():
     cv2.imwrite(str(fileName), image)
 
 
+
+
 #_________________________constants_and_init________________________________
 
 singleImage = 0
 validatedImageFlag = 0
 root = TkinterDnD.Tk()
-root.geometry('300x150')
+root.geometry('300x300')
 root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
 var2 = StringVar()
@@ -233,6 +309,7 @@ dropDownSelection1 = ['nearest',
                    'cubic',
                    'lanczos']
 hide = 1
+
 
 mainPage = MainPage(root)
 root.mainloop()
