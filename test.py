@@ -4,6 +4,8 @@ import numpy as np
 from tkinter import *
 from tkinterdnd2 import *
 from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+
 
 #_________________________manipulator________________________________
 
@@ -92,11 +94,12 @@ class Manipulator:
                            [0, -1, 0]])
         kernel = kernel / 5
         image = cv2.filter2D(src=image, ddepth=-1, kernel=kernel)
+        function = function + "sharpened_"
         if singleImage != 0:
             cv2.destroyAllWindows()
         singleImage = 1
         imageviewer(root)
-        function.set(function.get() + "sharpened")
+
 
     def grayScale(self):
         global image, singleImage
@@ -115,12 +118,25 @@ class Manipulator:
         global kernel, image, singleImage, function
         kernel = np.ones((6, 6), np.uint8)
         image = cv2.erode(image, kernel, cv2.BORDER_REFLECT)
+        function = function + "eroded_"
         if singleImage != 0:
             cv2.destroyAllWindows()
         singleImage =1
         imageviewer(root)
-        function.set(function.get() + "eroded")
 
+
+#_________________________AI_ upscalers________________________________
+
+class AIUpcscaler:
+    def __init__(self, master):
+        self.master = master
+        master.title("Peter's photo manipulator")
+
+        self.edsrButton = Button(master, text="erode", command=self.edsrUpscale)
+        self.edsrButton.pack(padx=5, pady=5)
+
+    def edsrUpscale(self):
+        return
 
 #_________________________main_page________________________________
 
@@ -196,8 +212,8 @@ def appScaler():
 
 def saveImage():
     global image, var2, function
-    fileName = str(function.get() + ".jpg")
-    cv2.imwrite(str(str(var2.get()) + fileName), image)
+    fileName = str(function + "image.jpg")
+    cv2.imwrite(str(fileName), image)
 
 
 #_________________________constants_and_init________________________________
@@ -210,7 +226,7 @@ root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
 var2 = StringVar()
 var3 = StringVar()
-function = StringVar()
+function = ""
 var3.set("linear")
 dropDownSelection1 = ['nearest',
                    'linear',
