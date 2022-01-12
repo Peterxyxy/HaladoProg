@@ -1,4 +1,3 @@
-import PIL
 import cv2
 from cv2 import cv2
 from cv2 import dnn_superres
@@ -6,7 +5,6 @@ import numpy as np
 from tkinter import *
 from tkinterdnd2 import *
 from PIL import Image, ImageTk
-import matplotlib.pyplot as plt
 
 
 
@@ -20,8 +18,8 @@ class Manipulator:
         master.title("Peter's photo manipulator")
 
         self.label = Label(master, text="Peter's photo manipulator")
-        self.label.pack(padx=5, pady=5)
-
+        self.label.pack(padx=5, pady=15)
+        
         self.backButton = Button(master, text="Back", command=self.back)
         self.backButton.pack(padx=5, pady=5)
 
@@ -32,12 +30,12 @@ class Manipulator:
         self.scale.pack()
 
         self.viewButton = Button(master, text="upscale", command=self.scaling)
-        self.viewButton.pack(padx=5, pady=5)
+        self.viewButton.pack(padx=5, pady=15)
 
         self.viewButton = Button(master, text="sharpen", command=self.sharpening)
         self.viewButton.pack(padx=5, pady=5)
 
-        self.viewButton = Button(master, text="grayscale", command=self.grayScale)
+        self.viewButton = Button(master, text="invert", command=self.invert)
         self.viewButton.pack(padx=5, pady=5)
 
         self.viewButton = Button(master, text="erode", command=self.erode)
@@ -62,7 +60,7 @@ class Manipulator:
         global root, mainPage
         for widget in root.winfo_children():
             widget.destroy()
-        root.geometry('300x300')
+        root.geometry('300x200')
         mainPage = MainPage(root)
 
 
@@ -71,16 +69,15 @@ class Manipulator:
         scale_percent = int(var.get())
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
-        appScaler()
         dim = (width, height)
         my_dict = {'nearest': cv2.INTER_NEAREST,
                    'linear': cv2.INTER_LINEAR,
                    'cubic': cv2.INTER_CUBIC,
                    'lanczos': cv2.INTER_LANCZOS4}
         image = cv2.resize(image, dim, my_dict[var3.get()])
+        appScaler()
         if singleImage != 0:
             cv2.destroyAllWindows()
-        #cv2.imshow("upscaled", image)
         singleImage = 1
         imageviewer(root)
 
@@ -99,17 +96,13 @@ class Manipulator:
         imageviewer(root)
 
 
-    def grayScale(self):
-        global image, singleImage
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        backtorgb = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
+    def invert(self):
+        global image, singleImage, function
         if singleImage != 0:
             cv2.destroyAllWindows()
-        im = Image.fromarray(backtorgb)
-        #ImageLabel = Label(self.master, image=im).pack()
-        #self.master.mainloop()
-        #cv2.imshow('grayscale', gray_image)
-        image = cv2.merge([gray_image,0,0])
+        image = cv2.bitwise_not(image)
+        function = function + "inverted_"
+        singleImage = 1
         imageviewer(root)
 
     def erode(self):
@@ -131,33 +124,25 @@ class AIUpcscaler:
         master.title("Peter's photo upscaler")
 
         self.backButton = Button(master, text="Back", command=self.back)
-        self.backButton.pack(padx=5, pady=5)
+        self.backButton.pack(padx=5, pady=25)
 
-        self.edsrButton = Button(master, text="EDSR", command=self.edsrUpscale)
-        self.edsrButton.pack(padx=5, pady=5)
+        self.label=Label(master, text='Please choose an upscaling algorithm,\n when you click on one,\n the image will be upscaled \n and saved to the application folder')
+        self.label.pack()
 
-        self.edsrButton = Button(master, text="ESPCN", command=self.espcnUpscale)
-        self.edsrButton.pack(padx=5, pady=5)
+        self.upscaleButton = Button(master, text="ESPCN", command=self.espcnUpscale)
+        self.upscaleButton.pack(padx=5, pady=5)
 
-        self.edsrButton = Button(master, text="FSRCNN", command=self.fsrcnnUpscale)
-        self.edsrButton.pack(padx=5, pady=5)
+        self.upscaleButton = Button(master, text="FSRCNN", command=self.fsrcnnUpscale)
+        self.upscaleButton.pack(padx=5, pady=5)
 
-        self.edsrButton = Button(master, text="LapSRN", command=self.lapsrnUpscale)
-        self.edsrButton.pack(padx=5, pady=5)
+        self.upscaleButton = Button(master, text="LapSRN", command=self.lapsrnUpscale)
+        self.upscaleButton.pack(padx=5, pady=5)
+
+        self.upscaleButton = Button(master, text="EDSR (WARNING: resource intensive)", command=self.edsrUpscale)
+        self.upscaleButton.pack(padx=5, pady=5)
 
         self.closeButton = Button(master, text="Close", command=self.close)
-        self.closeButton.pack(padx=5, pady=5)
-
-    def edsrUpscale(self):
-        global image, var2, function
-        sr = cv2.dnn_superres.DnnSuperResImpl_create()
-        path = "EDSR_x2.pb"
-        sr.readModel(path)
-        sr.setModel("edsr", 2)
-        upscaledImage = sr.upsample(image)
-        cv2.imshow("upscaled with EDSR", upscaledImage)
-        function = "edsr_"
-        saveImage(upscaledImage)
+        self.closeButton.pack(padx=5, pady=25)
 
 
     def espcnUpscale(self):
@@ -193,6 +178,17 @@ class AIUpcscaler:
         function = "lapsrn_"
         saveImage(upscaledImage)
 
+    def edsrUpscale(self):
+        global image, var2, function
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        path = "EDSR_x2.pb"
+        sr.readModel(path)
+        sr.setModel("edsr", 2)
+        upscaledImage = sr.upsample(image)
+        cv2.imshow("upscaled with EDSR", upscaledImage)
+        function = "edsr_"
+        saveImage(upscaledImage)
+
     def close(self):
         self.master.destroy()
 
@@ -200,8 +196,9 @@ class AIUpcscaler:
         global root, mainPage
         for widget in root.winfo_children():
             widget.destroy()
-        root.geometry('300x300')
+        root.geometry('300x200')
         mainPage = MainPage(root)
+
 
 
 #_________________________main_page________________________________
@@ -215,20 +212,20 @@ class MainPage:
         def drop(event):
             var2.set(event.data)
 
-        Label(root, text='A kép elérési útja:').pack(anchor=NW, padx=10, pady=10)
+        Label(root, text='Please enter the path of an image:\n(you can also drag and drop the file to the box!)').pack(anchor=NW, padx=10, pady=10)
         e_box = Entry(root, textvar=var2, width=80)
         e_box.pack(fill=X, padx=10)
         e_box.drop_target_register(DND_FILES)
         e_box.dnd_bind('<<Drop>>', drop)
 
         self.button = Button(master, text="Image manipulation", command=self.classic)
-        self.button.pack(pady=10)
+        self.button.pack(pady=5)
 
         self.button = Button(master, text="AI upscaling", command=self.aiUpscaler)
-        self.button.pack(pady=10)
+        self.button.pack(pady=5)
 
         self.closeButton = Button(master, text="Close", command=self.close)
-        self.closeButton.pack(padx=5, pady=5)
+        self.closeButton.pack(pady=15)
 
     def close(self):
         self.master.destroy()
@@ -264,7 +261,7 @@ def ImageValidation():
         return True
     else:
         errorRoot = Tk()
-        errorLabel = Label(errorRoot, text='"Nem megfelelő elérési utat adott meg! \nKérem próbálja újra."')
+        errorLabel = Label(errorRoot, text='"The given path is incorrect! \nPlease try again."')
         errorLabel.pack(padx=10, pady=10)
         errorRoot.eval('tk::PlaceWindow . center')
 
@@ -279,14 +276,14 @@ def imageviewer(master):
         for widget in root.winfo_children():
             temp = widget
         widget.destroy()
-    ImageLabel = Label(master, image=imgtk).pack()
+    ImageLabel = Label(master, image=imgtk).pack(expand=TRUE)
     master.mainloop()
 
 def appScaler():
     global image, root
     width = int(image.shape[1])
     height = int(image.shape[0])
-    root.geometry(str(300+height) + "x" + str(400+width))
+    root.geometry(str(400+width) + "x" + str(500+height))
 
 
 def saveImage(image):
@@ -302,7 +299,7 @@ def saveImage(image):
 singleImage = 0
 validatedImageFlag = 0
 root = TkinterDnD.Tk()
-root.geometry('300x300')
+root.geometry('300x200')
 root.eval('tk::PlaceWindow . center')
 var = DoubleVar()
 var2 = StringVar()
@@ -319,9 +316,5 @@ hide = 1
 mainPage = MainPage(root)
 root.mainloop()
 
-#my_gui = TkinterGUI(root)
 
-#ablakok bezarasa
-#cv2.waitKey()
-#cv2.destroyAllWindows()
 
