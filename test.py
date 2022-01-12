@@ -43,8 +43,8 @@ class Manipulator:
         self.viewButton = Button(master, text="erode", command=self.erode)
         self.viewButton.pack(padx=5, pady=5)
 
-        self.viewButton = Button(master, text="save", command=self.save)
-        self.viewButton.pack(padx=5, pady=5)
+        self.saveButton = Button(master, text="save", command=self.save)
+        self.saveButton.pack(padx=5, pady=5)
 
         self.closeButton = Button(master, text="Close", command=self.close)
         self.closeButton.pack(padx=5, pady=5)
@@ -55,7 +55,8 @@ class Manipulator:
         self.master.destroy()
 
     def save(self):
-        saveImage()
+        global image
+        saveImage(image)
 
     def back(self):
         global root, mainPage
@@ -147,16 +148,16 @@ class AIUpcscaler:
         self.closeButton = Button(master, text="Close", command=self.close)
         self.closeButton.pack(padx=5, pady=5)
 
-
     def edsrUpscale(self):
         global image, var2, function
         sr = cv2.dnn_superres.DnnSuperResImpl_create()
         path = "EDSR_x2.pb"
         sr.readModel(path)
         sr.setModel("edsr", 2)
-        image = sr.upsample(image)
-        cv2.imshow("upscaled with EDSR", image)
-        function = function + "edsr_"
+        upscaledImage = sr.upsample(image)
+        cv2.imshow("upscaled with EDSR", upscaledImage)
+        function = "edsr_"
+        saveImage(upscaledImage)
 
 
     def espcnUpscale(self):
@@ -165,9 +166,10 @@ class AIUpcscaler:
         path = "ESPCN_x2.pb"
         sr.readModel(path)
         sr.setModel("espcn", 2)
-        image = sr.upsample(image)
-        cv2.imshow("upscaled with ESPCN", image)
-        function = function + "espcn_"
+        upscaledImage = sr.upsample(image)
+        cv2.imshow("upscaled with ESPCN", upscaledImage)
+        function = "espcn_"
+        saveImage(upscaledImage)
 
     def fsrcnnUpscale(self):
         global image, var2, function
@@ -175,9 +177,10 @@ class AIUpcscaler:
         path = "FSRCNN_x2.pb"
         sr.readModel(path)
         sr.setModel("fsrcnn", 2)
-        image = sr.upsample(image)
-        cv2.imshow("upscaled with FSRCNN", image)
-        function = function + "fsrxnn_"
+        upscaledImage = sr.upsample(image)
+        cv2.imshow("upscaled with FSRCNN", upscaledImage)
+        function = "fsrxnn_"
+        saveImage(upscaledImage)
 
     def lapsrnUpscale(self):
         global image, var2, function
@@ -185,9 +188,10 @@ class AIUpcscaler:
         path = "LapSRN_x2.pb"
         sr.readModel(path)
         sr.setModel("lapsrn", 2)
-        image = sr.upsample(image)
-        cv2.imshow("upscaled with LapSRN", image)
-        function = function + "lapsrn_"
+        upscaledImage = sr.upsample(image)
+        cv2.imshow("upscaled with LapSRN", upscaledImage)
+        function = "lapsrn_"
+        saveImage(upscaledImage)
 
     def close(self):
         self.master.destroy()
@@ -198,6 +202,7 @@ class AIUpcscaler:
             widget.destroy()
         root.geometry('300x300')
         mainPage = MainPage(root)
+
 
 #_________________________main_page________________________________
 
@@ -284,8 +289,8 @@ def appScaler():
     root.geometry(str(300+height) + "x" + str(400+width))
 
 
-def saveImage():
-    global image, var2, function
+def saveImage(image):
+    global var2, function
     fileName = str(function + "image.jpg")
     cv2.imwrite(str(fileName), image)
 
