@@ -11,41 +11,41 @@ from PIL import Image, ImageTk
 #_________________________manipulator________________________________
 
 class Manipulator:
-    global var, image, var3, dropDownSelection1
+    global upscalerPercentage, image, upscalerSelected, dropDownSelection1
 
     def __init__(self, master):
         self.master = master
         master.title("Peter's photo manipulator")
 
         self.label = Label(master, text="Peter's photo manipulator")
-        self.label.pack(padx=5, pady=15)
-        
+        self.label.grid(column=0, row=0, columnspan=9)
+
         self.backButton = Button(master, text="Back", command=self.back)
-        self.backButton.pack(padx=5, pady=5)
+        self.backButton.grid(column=0, row=1)
 
-        self.dropDown = OptionMenu(master, var3, "linear", "lanczos", "nearest", "cubic")
-        self.dropDown.pack(padx=5, pady=5)
+        self.dropDown = OptionMenu(master, upscalerSelected, "linear", "lanczos", "nearest", "cubic")
+        self.dropDown.grid(column=1, row=1, padx=5)
 
-        self.scale = Scale(master, variable=var, orient=HORIZONTAL, from_=1, to=200)
-        self.scale.pack()
+        self.scale = Scale(master, variable=upscalerPercentage, orient=HORIZONTAL, from_=1, to=200)
+        self.scale.grid(column=2, row=1, padx=5)
 
         self.viewButton = Button(master, text="upscale", command=self.scaling)
-        self.viewButton.pack(padx=5, pady=15)
+        self.viewButton.grid(column=3, row=1, padx=5)
 
         self.viewButton = Button(master, text="sharpen", command=self.sharpening)
-        self.viewButton.pack(padx=5, pady=5)
+        self.viewButton.grid(column=4, row=1, padx=5)
 
         self.viewButton = Button(master, text="invert", command=self.invert)
-        self.viewButton.pack(padx=5, pady=5)
+        self.viewButton.grid(column=5, row=1, padx=5)
 
         self.viewButton = Button(master, text="erode", command=self.erode)
-        self.viewButton.pack(padx=5, pady=5)
+        self.viewButton.grid(column=6, row=1, padx=5)
 
         self.saveButton = Button(master, text="save", command=self.save)
-        self.saveButton.pack(padx=5, pady=5)
+        self.saveButton.grid(column=7, row=1, padx=5)
 
         self.closeButton = Button(master, text="Close", command=self.close)
-        self.closeButton.pack(padx=5, pady=5)
+        self.closeButton.grid(column=8, row=1, padx=15)
 
 
 
@@ -65,21 +65,27 @@ class Manipulator:
 
 
     def scaling(self):
-        global image, singleImage, var, var3, root
-        scale_percent = int(var.get())
+        global image, singleImage, upscalerPercentage, upscalerSelected, root
+        scale_percent = int(upscalerPercentage.get())
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        my_dict = {'nearest': cv2.INTER_NEAREST,
-                   'linear': cv2.INTER_LINEAR,
-                   'cubic': cv2.INTER_CUBIC,
-                   'lanczos': cv2.INTER_LANCZOS4}
-        image = cv2.resize(image, dim, my_dict[var3.get()])
-        appScaler()
-        if singleImage != 0:
-            cv2.destroyAllWindows()
-        singleImage = 1
-        imageviewer(root)
+        if width<1 or height<1:
+            errorRoot = Tk()
+            errorLabel = Label(errorRoot, text='"The image would be to small to see! \nPlease try a bigger number."')
+            errorLabel.pack(padx=10, pady=10)
+            errorRoot.eval('tk::PlaceWindow . center')
+        else:
+            dim = (width, height)
+            my_dict = {'nearest': cv2.INTER_NEAREST,
+                       'linear': cv2.INTER_LINEAR,
+                       'cubic': cv2.INTER_CUBIC,
+                       'lanczos': cv2.INTER_LANCZOS4}
+            image = cv2.resize(image, dim, my_dict[upscalerSelected.get()])
+            appScaler(100)
+            if singleImage != 0:
+                cv2.destroyAllWindows()
+            singleImage = 1
+            imageviewer(root,TRUE)
 
 
     def sharpening(self):
@@ -93,7 +99,7 @@ class Manipulator:
         if singleImage != 0:
             cv2.destroyAllWindows()
         singleImage = 1
-        imageviewer(root)
+        imageviewer(root,TRUE)
 
 
     def invert(self):
@@ -103,7 +109,7 @@ class Manipulator:
         image = cv2.bitwise_not(image)
         function = function + "inverted_"
         singleImage = 1
-        imageviewer(root)
+        imageviewer(root,TRUE)
 
     def erode(self):
         global kernel, image, singleImage, function
@@ -113,7 +119,7 @@ class Manipulator:
         if singleImage != 0:
             cv2.destroyAllWindows()
         singleImage =1
-        imageviewer(root)
+        imageviewer(root,TRUE)
 
 
 #_________________________AI_ upscalers________________________________
@@ -146,7 +152,7 @@ class AIUpcscaler:
 
 
     def espcnUpscale(self):
-        global image, var2, function
+        global image, pathToImage, function
         sr = cv2.dnn_superres.DnnSuperResImpl_create()
         path = "ESPCN_x2.pb"
         sr.readModel(path)
@@ -157,7 +163,7 @@ class AIUpcscaler:
         saveImage(upscaledImage)
 
     def fsrcnnUpscale(self):
-        global image, var2, function
+        global image, pathToImage, function
         sr = cv2.dnn_superres.DnnSuperResImpl_create()
         path = "FSRCNN_x2.pb"
         sr.readModel(path)
@@ -168,7 +174,7 @@ class AIUpcscaler:
         saveImage(upscaledImage)
 
     def lapsrnUpscale(self):
-        global image, var2, function
+        global image, pathToImage, function
         sr = cv2.dnn_superres.DnnSuperResImpl_create()
         path = "LapSRN_x2.pb"
         sr.readModel(path)
@@ -179,7 +185,7 @@ class AIUpcscaler:
         saveImage(upscaledImage)
 
     def edsrUpscale(self):
-        global image, var2, function
+        global image, pathToImage, function
         sr = cv2.dnn_superres.DnnSuperResImpl_create()
         path = "EDSR_x2.pb"
         sr.readModel(path)
@@ -196,6 +202,7 @@ class AIUpcscaler:
         global root, mainPage
         for widget in root.winfo_children():
             widget.destroy()
+        cv2.destroyAllWindows()
         root.geometry('300x200')
         mainPage = MainPage(root)
 
@@ -207,13 +214,13 @@ class MainPage:
     def __init__(self, master):
         self.master = master
 
-        global image, var2, var
+        global image, pathToImage, upscalerPercentage
 
         def drop(event):
-            var2.set(event.data)
+            pathToImage.set(event.data)
 
         Label(root, text='Please enter the path of an image:\n(you can also drag and drop the file to the box!)').pack(anchor=NW, padx=10, pady=10)
-        e_box = Entry(root, textvar=var2, width=80)
+        e_box = Entry(root, textvar=pathToImage, width=80)
         e_box.pack(fill=X, padx=10)
         e_box.drop_target_register(DND_FILES)
         e_box.dnd_bind('<<Drop>>', drop)
@@ -233,22 +240,22 @@ class MainPage:
     def classic(self):
         global validatedImageFlag, image
         if ImageValidation():
-            global image, var, var2, singleImage
+            global image, upscalerPercentage, pathToImage, singleImage
             for widget in root.winfo_children():
                 widget.destroy()
-            appScaler()
+            appScaler(100)
             manipulator = Manipulator(root)
-            imageviewer(root)
+            imageviewer(root,TRUE)
 
     def aiUpscaler(self):
         global validatedImageFlag, image
         if ImageValidation():
-            global image, var, var2, singleImage
+            global image, upscalerPercentage, pathToImage, singleImage
             for widget in root.winfo_children():
                 widget.destroy()
-            appScaler()
+            appScaler(400)
             aIUpcscaler = AIUpcscaler(root)
-            imageviewer(root)
+            imageviewer(root, FALSE)
 
 
 
@@ -256,7 +263,7 @@ class MainPage:
 
 def ImageValidation():
     global validatedImageFlag, image
-    image = cv2.imread(str(var2.get()), flags=cv2.IMREAD_COLOR)
+    image = cv2.imread(str(pathToImage.get()), flags=cv2.IMREAD_COLOR)
     if image is not None:
         return True
     else:
@@ -265,7 +272,7 @@ def ImageValidation():
         errorLabel.pack(padx=10, pady=10)
         errorRoot.eval('tk::PlaceWindow . center')
 
-def imageviewer(master):
+def imageviewer(master, grid):
     global image, root, singleImage
     img = image
     blue, green, red = cv2.split(img)
@@ -276,18 +283,24 @@ def imageviewer(master):
         for widget in root.winfo_children():
             temp = widget
         widget.destroy()
-    ImageLabel = Label(master, image=imgtk).pack(expand=TRUE)
-    master.mainloop()
+    if grid==TRUE:
+        ImageLabel = Label(master, image=imgtk).grid(column=0, row=44, columnspan=300, sticky=S)
+        master.mainloop()
+    else:
+        ImageLabel = Label(master, image=imgtk).pack()
+        master.mainloop()
 
-def appScaler():
+
+def appScaler(menuHeiht):
     global image, root
     width = int(image.shape[1])
     height = int(image.shape[0])
-    root.geometry(str(400+width) + "x" + str(500+height))
+    if width<600: width=600
+    root.geometry(str(width) + "x" + str(menuHeiht+height))
 
 
 def saveImage(image):
-    global var2, function
+    global pathToImage, function
     fileName = str(function + "image.jpg")
     cv2.imwrite(str(fileName), image)
 
@@ -301,11 +314,11 @@ validatedImageFlag = 0
 root = TkinterDnD.Tk()
 root.geometry('300x200')
 root.eval('tk::PlaceWindow . center')
-var = DoubleVar()
-var2 = StringVar()
-var3 = StringVar()
+upscalerPercentage = DoubleVar()
+pathToImage = StringVar()
+upscalerSelected = StringVar()
 function = ""
-var3.set("linear")
+upscalerSelected.set("nearest")
 dropDownSelection1 = ['nearest',
                    'linear',
                    'cubic',
