@@ -291,7 +291,7 @@ def imageviewer(master, grid):
         master.mainloop()
 
 
-def appScaler(menuHeiht):
+def appScaler(menuHeight):
     global image, root
     width = int(image.shape[1])
     height = int(image.shape[0])
