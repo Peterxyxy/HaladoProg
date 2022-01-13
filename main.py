@@ -296,7 +296,7 @@ def appScaler(menuHeight):
     width = int(image.shape[1])
     height = int(image.shape[0])
     if width<600: width=600
-    root.geometry(str(width) + "x" + str(menuHeiht+height))
+    root.geometry(str(width) + "x" + str(menuHeight+height))
 
 
 def saveImage(image):
