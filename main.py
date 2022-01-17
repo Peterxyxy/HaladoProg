@@ -199,7 +199,8 @@ class AIUpcscaler:
         self.master.destroy()
 
     def back(self):
-        global root, mainPage
+        global root, mainPage, function
+        function = ""
         for widget in root.winfo_children():
             widget.destroy()
         cv2.destroyAllWindows()
