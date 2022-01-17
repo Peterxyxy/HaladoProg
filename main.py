@@ -219,19 +219,19 @@ class MainPage:
         def drop(event):
             pathToImage.set(event.data)
 
-        Label(root, text='Please enter the path of an image:\n(you can also drag and drop the file to the box!)').pack(anchor=NW, padx=10, pady=10)
-        e_box = Entry(root, textvar=pathToImage, width=80)
+        Label(self.master, text='Please enter the path of an image:\n(you can also drag and drop the file to the box!)').pack(anchor=NW, padx=10, pady=10)
+        e_box = Entry(self.master, textvar=pathToImage, width=80)
         e_box.pack(fill=X, padx=10)
         e_box.drop_target_register(DND_FILES)
         e_box.dnd_bind('<<Drop>>', drop)
 
-        self.button = Button(master, text="Image manipulation", command=self.classic)
+        self.button = Button(self.master, text="Image manipulation", command=self.classic)
         self.button.pack(pady=5)
 
-        self.button = Button(master, text="AI upscaling", command=self.aiUpscaler)
+        self.button = Button(self.master, text="AI upscaling", command=self.aiUpscaler)
         self.button.pack(pady=5)
 
-        self.closeButton = Button(master, text="Close", command=self.close)
+        self.closeButton = Button(self.master, text="Close", command=self.close)
         self.closeButton.pack(pady=15)
 
     def close(self):
@@ -245,7 +245,7 @@ class MainPage:
                 widget.destroy()
             appScaler(100)
             manipulator = Manipulator(root)
-            imageviewer(root,TRUE)
+            imageviewer(root, TRUE)
 
     def aiUpscaler(self):
         global validatedImageFlag, image
@@ -262,7 +262,7 @@ class MainPage:
 #_________________________global_functions________________________________
 
 def ImageValidation():
-    global validatedImageFlag, image
+    global image
     image = cv2.imread(str(pathToImage.get()), flags=cv2.IMREAD_COLOR)
     if image is not None:
         return True
@@ -273,14 +273,14 @@ def ImageValidation():
         errorRoot.eval('tk::PlaceWindow . center')
 
 def imageviewer(master, grid):
-    global image, root, singleImage
+    global image, singleImage
     img = image
     blue, green, red = cv2.split(img)
     img = cv2.merge((red, green, blue))
     im = Image.fromarray(img)
     imgtk = ImageTk.PhotoImage(image=im)
     if singleImage != 0:
-        for widget in root.winfo_children():
+        for widget in master.winfo_children():
             temp = widget
         widget.destroy()
     if grid==TRUE:
@@ -310,7 +310,6 @@ def saveImage(image):
 #_________________________constants_and_init________________________________
 
 singleImage = 0
-validatedImageFlag = 0
 root = TkinterDnD.Tk()
 root.geometry('300x200')
 root.eval('tk::PlaceWindow . center')
